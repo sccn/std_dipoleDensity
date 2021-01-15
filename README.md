@@ -171,15 +171,15 @@ The plots provided are shown below:
 <tbody>
 <tr class="odd">
 <td><p>Tiled dipole density plot: Each cluster selected will create a tiled image of MRI slices showing the cluster densities. The orientation of the slices is chosen using "Slice Orientation" in the original pop-up interface.</p></td>
-<td><p><a href="images/Dipoledensity_dipplottile.png" title="wikilink">400px</a></p></td>
+<td><p><img src="images/Dipoledensity_dipplottile.png"></p></td>
 </tr>
 <tr class="even">
 <td><p>Interactive dipole density plot: This figure contains the same information as in the tiled dipole density plot. the interface allows the slice locations to be shifted in real time to allow for a more intuitive egometric understanding of dipole density locations.</p></td>
-<p><a href="images/Dipoledensity_dipplotinteractive.png" title="wikilink">150px</a></p>
+<p><img src="images/Dipoledensity_dipplotinteractive.png"></p>
 </tr>
 <tr class="odd">
 <td><p>3D dipplot: All the dipoles from the selected clusters and groups are presented in 3D. Each cluster/group is marked by the color chosed in the user interface.</p></td>
-<td><p><a href="images/Dipoledensity_dipplot3d.png" title="wikilink">400px</a></p></td>
+<td><p><img src="images/Dipoledensity_dipplot3d.png"></p></td>
 </tr>
 </tbody>
 </table>
