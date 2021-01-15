@@ -175,7 +175,7 @@ The plots provided are shown below:
 </tr>
 <tr class="even">
 <td><p>Interactive dipole density plot: This figure contains the same information as in the tiled dipole density plot. the interface allows the slice locations to be shifted in real time to allow for a more intuitive egometric understanding of dipole density locations.</p></td>
-<p><img src="images/Dipoledensity_dipplotinteractive.png"></p>
+<td><p><img src="images/Dipoledensity_dipplotinteractive.png" width="150px" height="300px"></p></td>
 </tr>
 <tr class="odd">
 <td><p>3D dipplot: All the dipoles from the selected clusters and groups are presented in 3D. Each cluster/group is marked by the color chosed in the user interface.</p></td>
