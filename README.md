@@ -1,3 +1,5 @@
+![topImage.png](images/topImage.png)
+
 # STUDY dipole density EEGLAB plugin
 
 DipoleDensity, called by the function std_dipplotWithDensity or in the
