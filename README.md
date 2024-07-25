@@ -81,6 +81,7 @@ calculated separately, so the sum of probability FOR EACH is 1. If you
 add up Level3 and Level5 together, they will overlap each other and the
 sum will be 2.
 
+```
 `      % Exclusion list--'x' means to exclude.`
 `        Angular Gyrus`
 `        Anterior Cingulate`
@@ -137,6 +138,7 @@ sum will be 2.
 `      x Uncus`
 `      x Uvula`
 `      x Uvula of Vermis`
+```
 
 ![Version0_40.png](images/Version0_40.png)
 
