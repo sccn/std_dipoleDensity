@@ -59,6 +59,12 @@ Authors: Luca Pion-Tonacini and Makoto Miyakoshi. SCCN, INC, UCSD. The function 
 
 # Version history
 
+## Version 1.00 Update (08/23/2024)
+Updated to be compatible with EEGLAB 2024.1. Currently it is alpha version,
+not extensively tested yet. Once tested enough, it will be officially registered
+to the EEGLAB extentinon manager.
+
+
 ## Version 0.40 Update (10/31/2018)
 
 [Talairach daemon](http://www.talairach.org/index.html) (Lancaster et
