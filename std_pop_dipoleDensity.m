@@ -2,9 +2,10 @@
 %
 % See also: eegplugin_std_dipoleDensity() std_dipoleDensity() dipplot()        
 
-% Author: Makoto Miyakoshi, JSPS/SCCN,INC,UCSD
+% Author: Makoto Miyakoshi, JSPS/SCCN,INC,UCSD; Cincinnati Children's Hospital
+%
 % History
-% 
+% 08/23/2024 Makoto and Komal. Re-visiting this plugin to make it work again.
 % 10/02/2018 Makoto. Path to the Talailach tool added.
 % 03/06/2017 Makoto. FWHM used. Default is changed to Zeynep and Luca's calculation to have 9.8 mm error in Gaussian.
 % 02/24/2015 ver 0.22 by Makoto. (none) for the non-selected. BrainBlobBrower layout. 
@@ -21,6 +22,7 @@
 % 11/23/2012 ver 1.0 by Makoto. Created.
 
 % Copyright (C) 2012, Makoto Miyakoshi JSPS/SCCN,INC,UCSD
+%               2024, Makoto Miyakoshi Cincinnati Children's Hospital
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -58,23 +60,26 @@ if length(STUDY.cluster)>1
     end
 end
 
-% group condition in the STUDY.design 
-var2 = STUDY.design(STUDY.currentdesign).variable(1,2).value;
-groupString = '(none)|all';
-if ~isempty(var2)
-    for n = 1:length(var2)
-        if iscell(var2{1,n}) % if groups are combined in the selected group condition
-            tmpCell = var2{1,n}; % work on copy
-            tmpCell(2,:) = {' & '};
-            tmpCell{2,end} = '';
-            tmpString = [tmpCell{:}];
-            clear tmpCell
-        else
-            tmpString = var2{1,n};
-        end
-        groupString = [groupString '|' tmpString];
-    end
-end   
+% Group condition in the STUDY.design. I write this part based on prediction of current STUDY's behavior. (08/23/2024 Makoto)
+variableLabels  = cellfun(@(x) x, {STUDY.design(STUDY.currentdesign).variable.label}, 'UniformOutput', false);
+groupLabelIndex = contains(variableLabels, 'group');
+groupString = [{'(none)'} {'all'} cellfun(@(x) x{1}, STUDY.design(STUDY.currentdesign).variable(groupLabelIndex).value, 'UniformOutput', false)];
+    % var2 = STUDY.design(STUDY.currentdesign).variable(1,2).value;
+    % groupString = '(none)|all';
+    % if ~isempty(var2)
+    %     for n = 1:length(var2)
+    %         if iscell(var2{1,n}) % if groups are combined in the selected group condition
+    %             tmpCell = var2{1,n}; % work on copy
+    %             tmpCell(2,:) = {' & '};
+    %             tmpCell{2,end} = '';
+    %             tmpString = [tmpCell{:}];
+    %             clear tmpCell
+    %         else
+    %             tmpString = var2{1,n};
+    %         end
+    %         groupString = [groupString '|' tmpString];
+    %     end
+    % end   
 
 % collect user input
 try
@@ -213,13 +218,21 @@ end
 plotParams{1,6}  = userInput{1,16};             % slice orientation
 
 % FWHM = 2.355*sigma See https://en.wikipedia.org/wiki/Full_width_at_half_maximum
-plotParams{1,7}  = str2num(userInput{1,17})/2.355; %#ok<ST2NM> % Smoothing [mm] converted from Gauss sigma to FWHM
+plotParams{1,7}  = str2num(userInput{1,17})/2.355; % Smoothing [mm] converted from Gauss sigma to FWHM
+plotParams{1,8}  = str2num(userInput{1,18});       % color scale scale range
+plotParams{1,9}  = userInput{1,19};                % group subtractor
+plotParams{1,10} = userInput{1,20};                % group subtracted
+plotParams{1,11} = str2num(userInput{1,21});       % threshold [%]
+plotParams{1,12} = userInput{1,22};                % save figure or not
 
-plotParams{1,8}  = str2num(userInput{1,18}); %#ok<ST2NM> % color scale upper limit [mm]
-plotParams{1,9}  = userInput{1,19};             % group subtractor
-plotParams{1,10} = userInput{1,20};             % group subtracted
-plotParams{1,11} = str2num(userInput{1,21}); %#ok<ST2NM> % threshold [%]
-plotParams{1,12} = userInput{1,22};             % save figure or not
-
-% pass them to the main function
+% Pass them to the main function.
+%
+% The items of the plotParams are as follows:
+% 1-5: {ClusterIdx, GroupIdx, Color, Colorname}
+% 6: Slice orientation
+% 7: FWHM
+% 8: Color scale lower and upper limits
+% 9: Subtracting group index
+% 10: Subtracted group index
+% 11: Threshold [%] for plotting the difference
 std_dipoleDensity(STUDY, ALLEEG, plotParams)

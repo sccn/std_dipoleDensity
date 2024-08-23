@@ -12,10 +12,12 @@
 %
 % See also: eegplugin_std_dipoleDensity() std_pop_dipplotWithDensity() dipplot() mri3dplot()        
 
-% Author: Makoto Miyakoshi, JSPS/SCCN, INC, UCSD.
+% Author: Makoto Miyakoshi, JSPS/SCCN, INC, UCSD. Cincinnati Children's Hospital
 %         Luca Pion-Tonacini, SCCN, INC, UCSD.
 %         compute_centroid written by Hilit Serby, Arnaud Delorme, Scott Makeig, SCCN, INC, UCSD, June, 2005
+%
 % History:
+% 08/23/2024 Makoto and Komal. Re-visiting this plugin to make it work again.
 % 10/02/2018 Makoto. Dipole probability density calculation fixed.
 % 05/22/2017 Makoto. Fixed the calculation of a cluster centroid when bilateral dipoles are present.
 % 03/16/2017 Makoto. Fixed the bilateral dipole case to choose the consistent one with cluster centroid.
@@ -78,35 +80,35 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% loop for all 5 selections %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for n = 1:5
-    if varargin{1,n}.cluster>1 & varargin{1,n}.group>1
-        tmpCluster   = varargin{1,n}.cluster-1;
-        tmpGroup     = varargin{1,n}.group;
-        tmpColor     = varargin{1,n}.color;
-        tmpColorName = varargin{1,n}.colorName;
+for dipDensityPlotIdx = 1:5
+    if varargin{1,dipDensityPlotIdx}.cluster>1 & varargin{1,dipDensityPlotIdx}.group>1
+        currentCluster   = varargin{1,dipDensityPlotIdx}.cluster-1;
+        currentGroup     = varargin{1,dipDensityPlotIdx}.group;
+        currentColor     = varargin{1,dipDensityPlotIdx}.color;
+        currentColorName = varargin{1,dipDensityPlotIdx}.colorName;
         
         %%%%%%%%%%%%%%%%%%%%%%%
         %%% separate groups %%%
         %%%%%%%%%%%%%%%%%%%%%%%
-        STUDY = std_groupDipSeparator(STUDY, ALLEEG, tmpCluster);
+        STUDY = std_groupDipSeparator(STUDY, ALLEEG, currentCluster);
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% select specific/all group(s) %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if tmpGroup == 2; % show all groups
+        if currentGroup == 2 % show all groups
             tmpGroupName = 'all';
             source  = struct([]);
             dipName = [];
-            for numGroups = 1:length(STUDY.design(currentDesign).variable(1,groupFieldIdx).value);
-                source    = [source STUDY.cluster(1,tmpCluster).groupDipModels{1,numGroups}];
-                dipName   = [dipName STUDY.cluster(1,tmpCluster).groupDipNames{1,numGroups}];
+            for groupIdx = 1:length(STUDY.design(currentDesign).variable(1,groupFieldIdx).value);
+                source   = [source STUDY.cluster(1,currentCluster).groupDipModels{1,groupIdx}];
+                dipName  = [dipName STUDY.cluster(1,currentCluster).groupDipNames{1,groupIdx}];
             end
         else % selecting a group
-            tmpGroupName = STUDY.design(currentDesign).variable(1,groupFieldIdx).value{1,tmpGroup-2};
+            tmpGroupName = STUDY.design(currentDesign).variable(1,groupFieldIdx).value{1,currentGroup-2};
             % tmpGroupName = [tmpGroupName;repmat({' and '},1,size(tmpGroupName,2))];
             % tmpGroupName = [tmpGroupName{1:end-1}];
-            source  = STUDY.cluster(1,tmpCluster).groupDipModels{1,tmpGroup-2};
-            dipName = STUDY.cluster(1,tmpCluster).groupDipNames{1,tmpGroup-2};
+            source  = STUDY.cluster(1,currentCluster).groupDipModels{1,currentGroup-2};
+            dipName = STUDY.cluster(1,currentCluster).groupDipNames{1,currentGroup-2};
         end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -156,7 +158,7 @@ for n = 1:5
     standardDeviation = std(coordinateTable);
     standardError     = std(coordinateTable)/sqrt(size(coordinateTable,1));
     clusterReport     = sprintf('\nCluster: %.0f\nCentroid in MNI:    [%2.0f %2.0f %2.0f]\nStandard Deviation: [%2.0f %2.0f %2.0f]\nStandard Error    : [%2.0f %2.0f %2.0f]\n',...
-        tmpCluster,...
+        currentCluster,...
         centroid.posxyz(1),   centroid.posxyz(2),   centroid.posxyz(3), ...
         standardDeviation(1), standardDeviation(2), standardDeviation(3),...
         standardError(1),     standardError(2),     standardError(3));
@@ -165,13 +167,13 @@ for n = 1:5
     %%% prepare colors %%%
     %%%%%%%%%%%%%%%%%%%%%%
     dipColor = cell(1, length(source));
-    dipColor(1:length(source)-1) = {tmpColor};
+    dipColor(1:length(source)-1) = {currentColor};
     dipColor(end) = {[1 0 0]};
     
     %%%%%%%%%%%%%%%%%%%%%
     %%% prepare names %%%
     %%%%%%%%%%%%%%%%%%%%%
-    centroidName = [STUDY.cluster(1,tmpCluster).name ' mean'];
+    centroidName = [STUDY.cluster(1,currentCluster).name ' mean'];
     dipName = [dipName centroidName];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -211,21 +213,21 @@ for n = 1:5
         tmpString = [tmpCell{:}];
         tmpGroupName = tmpString;
     end
-    set(h1, 'PaperPositionMode', 'auto', 'InvertHardcopy', 'off', 'menu', 'none', 'NumberTitle','off','Name', ['Cls ' num2str(tmpCluster) ' Group ' tmpGroupName  '; std_dipoleDensity()']);
+    set(h1, 'PaperPositionMode', 'auto', 'InvertHardcopy', 'off', 'menu', 'none', 'NumberTitle','off','Name', ['Cls ' num2str(currentCluster) ' Group ' tmpGroupName  '; std_dipoleDensity()']);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% Call BrainBlobBrowser %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     brainBlobBrowser('data', dens3d{1}, 'clusterReport', clusterReport, 'clusterStd', standardDeviation);
     
-    allGroupDens3d{tmpGroup} = dens3d;
+    allGroupDens3d{currentGroup} = dens3d;
     h1 = gcf;
-    set(h1, 'PaperPositionMode', 'auto', 'InvertHardcopy', 'off', 'menu', 'none', 'NumberTitle','off','Name', ['Cls ' num2str(tmpCluster) ' Group ' tmpGroupName  '; BrainBlobBrowser()']);
+    set(h1, 'PaperPositionMode', 'auto', 'InvertHardcopy', 'off', 'menu', 'none', 'NumberTitle','off','Name', ['Cls ' num2str(currentCluster) ' Group ' tmpGroupName  '; BrainBlobBrowser()']);
     
     allSource   = [allSource source];
     allDipName  = [allDipName dipName];
     allDipColor = [allDipColor dipColor];
-    allDipPlotTitle = [allDipPlotTitle tmpColorName ', Cls ' num2str(tmpCluster) ' Group ' tmpGroupName '; '];
+    allDipPlotTitle = [allDipPlotTitle currentColorName ', Cls ' num2str(currentCluster) ' Group ' tmpGroupName '; '];
     
     if varargin{1,12} == 1
         print(h1, '-dpsc2', ['dipDensity_' allDipPlotTitle(1:end-2)], '-loose')
@@ -240,16 +242,16 @@ if varargin{9}>1 && varargin{10}>1 && ~isempty(varargin{11})
     
     % Compute surrogate difference.
     n = 1;
-    tmpCluster  = varargin{1,n}.cluster-1;
-    tmpGroup    = varargin{1,n}.group;
-    dipoles1    = STUDY.cluster(1,tmpCluster).groupDipModels{1,tmpGroup-2};
-    subjectIdx1 = STUDY.cluster(1,tmpCluster).setinds{1,tmpGroup-2};
+    currentCluster  = varargin{1,n}.cluster-1;
+    currentGroup    = varargin{1,n}.group;
+    dipoles1    = STUDY.cluster(1,currentCluster).groupDipModels{1,currentGroup-2};
+    subjectIdx1 = STUDY.cluster(1,currentCluster).setinds{1,currentGroup-2};
     
     n = 2;
-    tmpCluster  = varargin{1,n}.cluster-1;
-    tmpGroup    = varargin{1,n}.group;    
-    dipoles2    = STUDY.cluster(1,tmpCluster).groupDipModels{1,tmpGroup-2};
-    subjectIdx2 = STUDY.cluster(1,tmpCluster).setinds{1,tmpGroup-2};
+    currentCluster  = varargin{1,n}.cluster-1;
+    currentGroup    = varargin{1,n}.group;    
+    dipoles2    = STUDY.cluster(1,currentCluster).groupDipModels{1,currentGroup-2};
+    subjectIdx2 = STUDY.cluster(1,currentCluster).setinds{1,currentGroup-2};
     
     num2str(varargin{11})
     
@@ -562,48 +564,93 @@ end;
         
     
     
-function STUDY = std_groupDipSeparator(STUDY, ALLEEG, clusterIndex);
+function STUDY = std_groupDipSeparator(STUDY, ALLEEG, clusterIndex)
+
+% Reserve the space for the output.
 STUDY.cluster(1,clusterIndex).groupDipModels = struct([]);
-groupDipModel = struct([]);
+groupDipModel                                = struct([]);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% compute 'group' or 'session' variable index %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-designLabel = {STUDY.design(STUDY.currentdesign).variable.label};
-groupFieldIdx = find(strcmp(designLabel, 'group')|strcmp(designLabel, 'session')); % is 'group' or 'session' non-exist, var1, or var2?
-if isempty(groupFieldIdx) % no 'group'
-    singletonFieldIdx = find(size(STUDY.cluster(1,clusterIndex).setinds)==1); % find the slot that is NOT the within-subject condition
-    if length(singletonFieldIdx)>1 % this means both var1 and var2 are empty
-        singletonFieldIdx = 1;
-    end
-    groupFieldIdx = singletonFieldIdx;
-end
+% Identify where 'group' labels are stored. I write this part based on prediction of current STUDY's behavior. (08/23/2024 Makoto)
+variableLabels  = cellfun(@(x) x, {STUDY.design(STUDY.currentdesign).variable.label}, 'UniformOutput', false);
+groupLabelIndex = contains(variableLabels, 'group');
 
-currentDesign = STUDY.currentdesign;
-for groupIndex = 1:size(STUDY.cluster(1,clusterIndex).setinds, groupFieldIdx)
-    if groupFieldIdx == 1 % var1 == 'group'
-        tmpSetInds = STUDY.cluster(1,clusterIndex).setinds(groupIndex,1);
-    else                  % var2 == 'group'
-        tmpSetInds = STUDY.cluster(1,clusterIndex).setinds(1,groupIndex);
-    end
-    tmpSetInds = tmpSetInds{1,1};
+% Obtain all 'group' labels.
+groupLabelCells = cellfun(@(x) x{1}, STUDY.design(STUDY.currentdesign).variable(groupLabelIndex).value, 'UniformOutput', false);
+
+% Obtain ALLEEG's group indices.
+alleegGroupCells = cellfun(@(x) x{1}, {ALLEEG.group}, 'UniformOutput', false)';
+
+for groupIdx = 1:length(groupLabelCells)
+
+    % Obtain the target group label.
+    currentGroupLabel = groupLabelCells(groupIdx);
+
+    % Determine who belong to the target label.
+    currentGroupSetIdx = find(contains(alleegGroupCells, currentGroupLabel));
     
-    for nthTmpSetInds = 1:length(tmpSetInds)
-        trueSetIndex  = STUDY.design(currentDesign).cell(tmpSetInds(nthTmpSetInds)).dataset;
-        if groupFieldIdx == 1 % var1 == 'group'
-            tmpIcIndex = STUDY.cluster(1,clusterIndex).allinds{groupIndex,1}(1, nthTmpSetInds);
-        else % var2 == 'group'
-            tmpIcIndex = STUDY.cluster(1,clusterIndex).allinds{1,groupIndex}(1, nthTmpSetInds);
+    % Loop for all subjects witin the group.
+    groupDipModel = [];
+    groupDipName  = [];
+    setIcIdx      = 0;
+    for setIdx = 1:length(currentGroupSetIdx)
+
+        currentSetIdx = currentGroupSetIdx(setIdx);
+        targetSetsIdxVec = find(STUDY.cluster(clusterIndex).sets==currentSetIdx);
+        targetIcIdxVec   = STUDY.cluster(clusterIndex).comps(targetSetsIdxVec);
+
+        % Loop for all ICs within the subject.
+        for icIdx = 1:length(targetIcIdxVec)
+
+            currentIcIdx  = targetIcIdxVec(icIdx);
+            tmpDipModel   = ALLEEG(1,currentSetIdx).dipfit.model(1,currentIcIdx);
+            tmpDipName    = sprintf('%s, IC%d', ALLEEG(1,currentSetIdx).subject, currentIcIdx);
+
+            setIcIdx = setIcIdx+1;
+            groupDipModel(1, setIcIdx).posxyz = tmpDipModel.posxyz;
+            groupDipModel(1, setIcIdx).momxyz = tmpDipModel.momxyz;
+            groupDipModel(1, setIcIdx).rv     = tmpDipModel.rv;
+            groupDipName{ 1, setIcIdx}        = tmpDipName;
         end
-        tmpDipModel   = ALLEEG(1,trueSetIndex).dipfit.model(1,tmpIcIndex);
-        tmpDipName    = [ALLEEG(1,trueSetIndex).subject ', IC' num2str(tmpIcIndex)];
-        
-        groupDipModel(1, nthTmpSetInds).posxyz = tmpDipModel.posxyz;
-        groupDipModel(1, nthTmpSetInds).momxyz = tmpDipModel.momxyz;
-        groupDipModel(1, nthTmpSetInds).rv     = tmpDipModel.rv;
-        groupDipName{1,  nthTmpSetInds}        = tmpDipName;
     end
-    STUDY.cluster(1,clusterIndex).groupDipModels{1,groupIndex} = groupDipModel;
-    STUDY.cluster(1,clusterIndex).groupDipNames{1,groupIndex} = groupDipName;
-    clear groupDipModel groupDipName
+    STUDY.cluster(1,clusterIndex).groupDipModels{1,groupIdx} = groupDipModel;
+    STUDY.cluster(1,clusterIndex).groupDipNames{ 1,groupIdx} = groupDipName;
 end
+
+% designLabel = {STUDY.design(STUDY.currentdesign).variable.label};
+% groupFieldIdx = find(strcmp(designLabel, 'group')|strcmp(designLabel, 'session')); % is 'group' or 'session' non-exist, var1, or var2?
+% if isempty(groupFieldIdx) % no 'group'
+%     singletonFieldIdx = find(size(STUDY.cluster(1,clusterIndex).setinds)==1); % find the slot that is NOT the within-subject condition
+%     if length(singletonFieldIdx)>1 % this means both var1 and var2 are empty
+%         singletonFieldIdx = 1;
+%     end
+%     groupFieldIdx = singletonFieldIdx;
+% end
+% 
+% currentDesign = STUDY.currentdesign;
+% for groupIndex = 1:size(STUDY.cluster(1,clusterIndex).setinds, groupFieldIdx)
+%     if groupFieldIdx == 1 % var1 == 'group'
+%         tmpSetInds = STUDY.cluster(1,clusterIndex).setinds(groupIndex,1);
+%     else                  % var2 == 'group'
+%         tmpSetInds = STUDY.cluster(1,clusterIndex).setinds(1,groupIndex);
+%     end
+%     tmpSetInds = tmpSetInds{1,1};
+% 
+%     for nthTmpSetInds = 1:length(tmpSetInds)
+%         trueSetIndex  = STUDY.design(currentDesign).cell(tmpSetInds(nthTmpSetInds)).dataset;
+%         if groupFieldIdx == 1 % var1 == 'group'
+%             tmpIcIndex = STUDY.cluster(1,clusterIndex).allinds{groupIndex,1}(1, nthTmpSetInds);
+%         else % var2 == 'group'
+%             tmpIcIndex = STUDY.cluster(1,clusterIndex).allinds{1,groupIndex}(1, nthTmpSetInds);
+%         end
+%         tmpDipModel   = ALLEEG(1,trueSetIndex).dipfit.model(1,tmpIcIndex);
+%         tmpDipName    = [ALLEEG(1,trueSetIndex).subject ', IC' num2str(tmpIcIndex)];
+% 
+%         groupDipModel(1, nthTmpSetInds).posxyz = tmpDipModel.posxyz;
+%         groupDipModel(1, nthTmpSetInds).momxyz = tmpDipModel.momxyz;
+%         groupDipModel(1, nthTmpSetInds).rv     = tmpDipModel.rv;
+%         groupDipName{1,  nthTmpSetInds}        = tmpDipName;
+%     end
+%     STUDY.cluster(1,clusterIndex).groupDipModels{1,groupIndex} = groupDipModel;
+%     STUDY.cluster(1,clusterIndex).groupDipNames{1,groupIndex} = groupDipName;
+%     clear groupDipModel groupDipName
+% end
